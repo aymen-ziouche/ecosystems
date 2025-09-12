@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecosystem Commit Trends</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #1a1a1a; color: #e0e0e0; display: flex; justify-content: center; align-items: center; padding: 20px; margin: 0; flex-direction: column; }
+        h1, h2 { color: #ffffff; text-align: center; }
+        .container { width: 90%; max-width: 1200px; background-color: #2a2a2a; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+        .chart-wrapper { position: relative; height: 500px; width: 100%; }
+        #ecosystem-breakdown { padding-top: 10px; }
+        .ecosystem-row { margin-bottom: 16px; }
+        .ecosystem-label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 500; }
+        .ecosystem-label span:first-child { color: #ffffff; }
+        .ecosystem-label span:last-child { color: #a0a0a0; }
+        .progress-bar-container { height: 10px; width: 100%; background-color: rgba(255, 255, 255, 0.1); border-radius: 5px; overflow: hidden; }
+        .progress-bar { height: 100%; border-radius: 5px; transition: width 0.5s ease-in-out; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); color: white; display: flex; justify-content: center; align-items: center; z-index: 1000; font-size: 1.5em; }
+    </style>
+</head>
+<body>
+    <div id="loading" class="loading-overlay">
+        <p>Loading and processing large data file...</p>
+    </div>
+
+    <div class="container">
+        <h1>Ecosystem Commit Activity</h1>
+        <div class="chart-wrapper">
+            <canvas id="commitTrendChart"></canvas>
+        </div>
+    </div>
+    <div id="ecosystem-breakdown" class="container">
+        <h2>Commit Distribution by Ecosystem</h2>
+    </div>
+
+    <script>
+        async function renderCharts() {
+            try {
+                // Set the data URL to your Supabase link
+                const dataUrl = 'https://mrfofellyffayhzroxrz.supabase.co/storage/v1/object/sign/easy/myData.json?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lYmQ2ZTI1NC1lMDc5LTQ2NTItOWRmMC0wMmRiMGM4MWEwZWQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJlYXN5L215RGF0YS5qc29uIiwiaWF0IjoxNzU3NzExODAwLCJleHAiOjE3ODkyNDc4MDB9.QGjHTMCP_5vptKgrYUAyrle9P65m1xqj0ctw7Mm2d3o';
+                
+                // --- THIS IS THE FIX ---
+                // The incorrect safety check has been removed.
+
+                const response = await fetch(dataUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}.`);
+                }
+                const jsonData = await response.json();
+
+                document.getElementById('loading').style.display = 'none';
+
+                // Function to generate distinct colors
+                const getDistinctColors = (numColors) => {
+                    const colors = [];
+                    for (let i = 0; i < numColors; i++) {
+                        const hue = i * (360 / numColors);
+                        colors.push(`hsl(${hue}, 70%, 60%)`);
+                    }
+                    return colors;
+                };
+
+                // 1. Process data for the charts
+                const commitsByEcosystemAndDay = {};
+                const allDates = new Set();
+                jsonData.forEach((repoData) => {
+                    const ecosystem = repoData.ecosystem;
+                    repoData.commits.forEach((commit) => {
+                        if (commit.date) {
+                            const date = new Date(commit.date).toISOString().split('T')[0];
+                            allDates.add(date);
+                            if (!commitsByEcosystemAndDay[ecosystem]) commitsByEcosystemAndDay[ecosystem] = {};
+                            if (!commitsByEcosystemAndDay[ecosystem][date]) commitsByEcosystemAndDay[ecosystem][date] = 0;
+                            commitsByEcosystemAndDay[ecosystem][date]++;
+                        }
+                    });
+                });
+
+                const sortedUniqueDates = Array.from(allDates).sort();
+                const ecosystemNames = Object.keys(commitsByEcosystemAndDay);
+                const ecosystemColors = getDistinctColors(ecosystemNames.length);
+                const colorMap = {};
+                ecosystemNames.forEach((name, index) => {
+                    colorMap[name] = ecosystemColors[index];
+                });
+
+                // 2. Create the datasets for the STACKED chart
+                const datasets = ecosystemNames.map((ecosystem) => {
+                    const data = sortedUniqueDates.map((date) => commitsByEcosystemAndDay[ecosystem][date] || 0);
+                    const color = colorMap[ecosystem];
+                    return {
+                        label: ecosystem,
+                        data: data,
+                        borderColor: color,
+                        backgroundColor: color.replace('hsl', 'hsla').replace(')', ', 0.2)'),
+                        borderWidth: 1.5,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        hoverRadius: 5,
+                    };
+                });
+
+                // 3. Create the stacked area chart
+                const trendCtx = document.getElementById('commitTrendChart').getContext('2d');
+                new Chart(trendCtx, {
+                    type: 'line',
+                    data: { labels: sortedUniqueDates, datasets: datasets },
+                    options: {
+                        maintainAspectRatio: false,
+                        responsive: true,
+                        interaction: { mode: 'index', intersect: false },
+                        scales: {
+                            y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Commits', color: '#e0e0e0' }, grid: { color: 'rgba(255, 255, 255, 0.1)', drawBorder: false }, ticks: { color: '#e0e0e0', precision: 0 } },
+                            x: { stacked: true, grid: { display: false, drawBorder: false }, ticks: { color: '#e0e0e0', autoSkip: true, maxTicksLimit: 10 } },
+                        },
+                        plugins: {
+                            legend: { position: 'bottom', labels: { color: '#e0e0e0', boxWidth: 12, padding: 20 } },
+                            tooltip: { mode: 'index', intersect: false },
+                        },
+                    },
+                });
+
+                // 4. Populate the percentage breakdown bars
+                const commitsByEcosystemTotal = {};
+                let totalAllCommits = 0;
+                jsonData.forEach((repoData) => {
+                    const ecosystem = repoData.ecosystem;
+                    const commitCount = repoData.commits.length;
+                    if (!commitsByEcosystemTotal[ecosystem]) commitsByEcosystemTotal[ecosystem] = 0;
+                    commitsByEcosystemTotal[ecosystem] += commitCount;
+                    totalAllCommits += commitCount;
+                });
+                const sortedEcosystemsForBreakdown = Object.entries(commitsByEcosystemTotal).sort(([, a], [, b]) => b - a);
+                const breakdownContainer = document.getElementById('ecosystem-breakdown');
+                let breakdownHtml = '<h2>Commit Distribution by Ecosystem</h2>';
+                sortedEcosystemsForBreakdown.forEach(([ecosystem, count]) => {
+                    const percentage = totalAllCommits > 0 ? (count / totalAllCommits) * 100 : 0;
+                    if (count > 0) {
+                        breakdownHtml += `
+                            <div class="ecosystem-row">
+                                <div class="ecosystem-label">
+                                    <span>${ecosystem}</span>
+                                    <span>${percentage.toFixed(2)}% (${count.toLocaleString()} commits)</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: ${percentage}%; background-color: ${colorMap[ecosystem] || '#8465FF'};"></div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                breakdownContainer.innerHTML = breakdownHtml;
+
+            } catch (error) {
+                console.error("Failed to load or render chart:", error);
+                document.getElementById('loading').innerHTML = `<p style="color: red;">Failed to load or render chart. Check console for details.</p>`;
+            }
+        }
+        
+        renderCharts();
+    </script>
+</body>
+</html>
