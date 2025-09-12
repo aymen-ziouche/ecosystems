@@ -38,14 +38,11 @@
     <script>
         async function renderCharts() {
             try {
-                // --- IMPORTANT ---
-                // Replace this URL with the public Download URL you got from Firebase Storage
+                // Set the data URL to your Supabase link
                 const dataUrl = 'https://mrfofellyffayhzroxrz.supabase.co/storage/v1/object/sign/easy/exports_commit_history.json?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lYmQ2ZTI1NC1lMDc5LTQ2NTItOWRmMC0wMmRiMGM4MWEwZWQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJlYXN5L2V4cG9ydHNfY29tbWl0X2hpc3RvcnkuanNvbiIsImlhdCI6MTc1NzcxMTA0MywiZXhwIjoxNzg5MjQ3MDQzfQ.wZYZKjcHyvru_GiqyGqYmMf1A2m28Zm65VUnZWXKNqI';
-
-                if (dataUrl === 'https://mrfofellyffayhzroxrz.supabase.co/storage/v1/object/sign/easy/exports_commit_history.json?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lYmQ2ZTI1NC1lMDc5LTQ2NTItOWRmMC0wMmRiMGM4MWEwZWQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJlYXN5L2V4cG9ydHNfY29tbWl0X2hpc3RvcnkuanNvbiIsImlhdCI6MTc1NzcxMTA0MywiZXhwIjoxNzg5MjQ3MDQzfQ.wZYZKjcHyvru_GiqyGqYmMf1A2m28Zm65VUnZWXKNqI') {
-                    document.getElementById('loading').innerHTML = '<p style="color: red;">Error: Please update the dataUrl in chart.html</p>';
-                    return;
-                }
+                
+                // --- THIS IS THE FIX ---
+                // The incorrect safety check has been removed.
 
                 const response = await fetch(dataUrl);
                 if (!response.ok) {
@@ -53,7 +50,6 @@
                 }
                 const jsonData = await response.json();
 
-                // Hide the loading overlay
                 document.getElementById('loading').style.display = 'none';
 
                 // Function to generate distinct colors
@@ -66,7 +62,7 @@
                     return colors;
                 };
 
-                // 1. Process data for the charts (in the browser)
+                // 1. Process data for the charts
                 const commitsByEcosystemAndDay = {};
                 const allDates = new Set();
                 jsonData.forEach((repoData) => {
