@@ -86,7 +86,7 @@
       async function renderCharts() {
         try {
           // Fetch the data from your local JSON file
-          const response = await fetch('data/exports_commit_history.json');
+          const response = await fetch('../../data/exports_commit_history.json');
           if (!response.ok) {
             throw new Error(
               `HTTP error! Status: ${response.status}. Make sure the file path is correct.`
