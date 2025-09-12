@@ -1,0 +1,21 @@
+{
+    "name": "github-commit-scraper",
+    "version": "1.0.0",
+    "description": "A script to fetch commit history for a list of GitHub repos.",
+    "main": "src/index.ts",
+    "scripts": {
+        "start": "ts-node src/index.ts",
+        "serve": "http-server ."
+    },
+    "dependencies": {
+        "@octokit/plugin-throttling": "^9.3.0",
+        "@octokit/rest": "^21.0.1",
+        "dotenv": "^16.4.5"
+    },
+    "devDependencies": {
+        "@types/node": "^20.14.9",
+        "http-server": "^14.1.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.5.3"
+    }
+}
