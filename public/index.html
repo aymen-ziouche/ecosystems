@@ -28,6 +28,13 @@
     <h1>Full XRP Ecosystem Developer Report</h1>
 
     <div class="container">
+        <h2>Monthly Commits by Developer Type</h2>
+        <div class="chart-wrapper">
+            <canvas id="commitReportChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="container">
         <h2>Monthly Developers by Type</h2>
         <div class="chart-wrapper">
             <canvas id="developerReportChart"></canvas>
@@ -45,94 +52,63 @@
         </div>
 
     <script>
-        // --- DATA FOR DEVELOPER REPORT CHART ---
-        const devReportData = {
-          "2023-02": {"full_time": 0, "part_time": 0, "one_time": 1},
-          "2023-05": {"full_time": 0, "part_time": 0, "one_time": 1},
-          "2023-08": {"full_time": 0, "part_time": 1, "one_time": 0},
-          "2023-09": {"full_time": 0, "part_time": 1, "one_time": 0},
-          "2024-01": {"full_time": 0, "part_time": 1, "one_time": 0},
-          "2024-02": {"full_time": 0, "part_time": 1, "one_time": 0},
-          "2024-03": {"full_time": 0, "part_time": 0, "one_time": 1},
-          "2024-06": {"full_time": 0, "part_time": 1, "one_time": 1},
-          "2024-07": {"full_time": 0, "part_time": 1, "one_time": 1},
-          "2024-08": {"full_time": 0, "part_time": 2, "one_time": 3},
-          "2024-09": {"full_time": 4, "part_time": 56, "one_time": 106},
-          "2024-10": {"full_time": 13, "part_time": 112, "one_time": 154},
-          "2024-11": {"full_time": 12, "part_time": 148, "one_time": 160},
-          "2024-12": {"full_time": 14, "part_time": 174, "one_time": 111},
-          "2025-01": {"full_time": 16, "part_time": 161, "one_time": 122},
-          "2025-02": {"full_time": 15, "part_time": 171, "one_time": 114},
-          "2025-03": {"full_time": 11, "part_time": 170, "one_time": 142},
-          "2025-04": {"full_time": 15, "part_time": 156, "one_time": 138},
-          "2025-05": {"full_time": 16, "part_time": 168, "one_time": 118},
-          "2025-06": {"full_time": 18, "part_time": 170, "one_time": 121},
-          "2025-07": {"full_time": 16, "part_time": 96, "one_time": 26},
-          "2025-08": {"full_time": 11, "part_time": 78, "one_time": 17},
-          "2025-09": {"full_time": 1, "part_time": 53, "one_time": 11}
+        // --- DATA SECTION ---
+        const commitVolumeData = {
+          "2023-02": {"full_time_commits": 0, "part_time_commits": 0, "one_time_commits": 1}, "2023-05": {"full_time_commits": 0, "part_time_commits": 0, "one_time_commits": 1}, "2023-08": {"full_time_commits": 0, "part_time_commits": 24, "one_time_commits": 0}, "2023-09": {"full_time_commits": 0, "part_time_commits": 4, "one_time_commits": 0}, "2024-01": {"full_time_commits": 0, "part_time_commits": 7, "one_time_commits": 0}, "2024-02": {"full_time_commits": 0, "part_time_commits": 1, "one_time_commits": 0}, "2024-03": {"full_time_commits": 0, "part_time_commits": 0, "one_time_commits": 3}, "2024-06": {"full_time_commits": 0, "part_time_commits": 30, "one_time_commits": 1}, "2024-07": {"full_time_commits": 0, "part_time_commits": 6, "one_time_commits": 1}, "2024-08": {"full_time_commits": 0, "part_time_commits": 7, "one_time_commits": 3}, "2024-09": {"full_time_commits": 210, "part_time_commits": 472, "one_time_commits": 163}, "2024-10": {"full_time_commits": 558, "part_time_commits": 657, "one_time_commits": 175}, "2024-11": {"full_time_commits": 475, "part_time_commits": 687, "one_time_commits": 176}, "2024-12": {"full_time_commits": 585, "part_time_commits": 701, "one_time_commits": 128}, "2025-01": {"full_time_commits": 736, "part_time_commits": 777, "one_time_commits": 137}, "2025-02": {"full_time_commits": 707, "part_time_commits": 699, "one_time_commits": 127}, "2025-03": {"full_time_commits": 494, "part_time_commits": 655, "one_time_commits": 158}, "2025-04": {"full_time_commits": 1233, "part_time_commits": 585, "one_time_commits": 180}, "2025-05": {"full_time_commits": 1618, "part_time_commits": 713, "one_time_commits": 157}, "2025-06": {"full_time_commits": 755, "part_time_commits": 866, "one_time_commits": 218}, "2025-07": {"full_time_commits": 916, "part_time_commits": 1035, "one_time_commits": 55}, "2025-08": {"full_time_commits": 404, "part_time_commits": 1401, "one_time_commits": 40}, "2025-09": {"full_time_commits": 30, "part_time_commits": 371, "one_time_commits": 27}
+        };
+        const devCountData = {
+          "2023-02": {"full_time": 0, "part_time": 0, "one_time": 1}, "2023-05": {"full_time": 0, "part_time": 0, "one_time": 1}, "2023-08": {"full_time": 0, "part_time": 1, "one_time": 0}, "2023-09": {"full_time": 0, "part_time": 1, "one_time": 0}, "2024-01": {"full_time": 0, "part_time": 1, "one_time": 0}, "2024-02": {"full_time": 0, "part_time": 1, "one_time": 0}, "2024-03": {"full_time": 0, "part_time": 0, "one_time": 1}, "2024-06": {"full_time": 0, "part_time": 1, "one_time": 1}, "2024-07": {"full_time": 0, "part_time": 1, "one_time": 1}, "2024-08": {"full_time": 0, "part_time": 2, "one_time": 3}, "2024-09": {"full_time": 4, "part_time": 56, "one_time": 106}, "2024-10": {"full_time": 13, "part_time": 112, "one_time": 154}, "2024-11": {"full_time": 12, "part_time": 148, "one_time": 160}, "2024-12": {"full_time": 14, "part_time": 174, "one_time": 111}, "2025-01": {"full_time": 16, "part_time": 161, "one_time": 122}, "2025-02": {"full_time": 15, "part_time": 171, "one_time": 114}, "2025-03": {"full_time": 11, "part_time": 170, "one_time": 142}, "2025-04": {"full_time": 15, "part_time": 156, "one_time": 138}, "2025-05": {"full_time": 16, "part_time": 168, "one_time": 118}, "2025-06": {"full_time": 18, "part_time": 170, "one_time": 121}, "2025-07": {"full_time": 16, "part_time": 96, "one_time": 26}, "2025-08": {"full_time": 11, "part_time": 78, "one_time": 17}, "2025-09": {"full_time": 1, "part_time": 53, "one_time": 11}
         };
 
         // --- CHART RENDERING LOGIC ---
 
-        function renderDeveloperTypeChart(data) {
-            const labels = Object.keys(data).sort();
-            const datasets = [
-                {
-                    label: 'Full-time devs',
-                    data: labels.map(month => data[month].full_time),
-                    borderColor: '#E0E0E0',
-                    backgroundColor: 'transparent',
-                    borderWidth: 2.5,
-                    tension: 0.4,
-                    pointRadius: 1,
-                    pointHoverRadius: 6,
-                },
-                {
-                    label: 'Part-time devs',
-                    data: labels.map(month => data[month].part_time),
-                    borderColor: '#FFD700',
-                    backgroundColor: 'transparent',
-                    borderWidth: 2.5,
-                    tension: 0.4,
-                    pointRadius: 1,
-                    pointHoverRadius: 6,
-                },
-                {
-                    label: 'One-time devs',
-                    data: labels.map(month => data[month].one_time),
-                    borderColor: '#808080',
-                    backgroundColor: 'transparent',
-                    borderWidth: 2.5,
-                    tension: 0.4,
-                    pointRadius: 1,
-                    pointHoverRadius: 6,
-                }
-            ];
-
-            const ctx = document.getElementById('developerReportChart').getContext('2d');
-            new Chart(ctx, {
+        function renderCommitVolumeChart(data) {
+             const labels = Object.keys(data).sort();
+             const datasets = [
+                { label: 'Commits by full-time devs', data: labels.map(m => data[m].full_time_commits), borderColor: '#E0E0E0', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 },
+                { label: 'Commits by part-time devs', data: labels.map(m => data[m].part_time_commits), borderColor: '#FFD700', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 },
+                { label: 'Commits by one-time devs', data: labels.map(m => data[m].one_time_commits), borderColor: '#808080', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 }
+             ];
+             const ctx = document.getElementById('commitReportChart').getContext('2d');
+             new Chart(ctx, {
                 type: 'line',
-                data: { labels: labels, datasets: datasets },
+                data: { labels, datasets },
                 options: {
-                    maintainAspectRatio: false, responsive: true,
-                    interaction: { mode: 'index', intersect: false },
+                    maintainAspectRatio: false, responsive: true, interaction: { mode: 'index', intersect: false },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: { display: true, text: 'Number of Developers', color: '#e0e0e0', font: { size: 14 } },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)', drawBorder: false },
-                            ticks: { color: '#e0e0e0', precision: 0 }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#e0e0e0', autoSkip: true, maxTicksLimit: 12 }
-                        },
+                        y: { beginAtZero: true, title: { display: true, text: 'Commits', color: '#e0e0e0', font: { size: 14 } }, grid: { color: 'rgba(255, 255, 255, 0.1)', drawBorder: false }, ticks: { color: '#e0e0e0', precision: 0 }},
+                        x: { grid: { display: false }, ticks: { color: '#e0e0e0', autoSkip: true, maxTicksLimit: 12 }}
                     },
                     plugins: {
                         legend: { position: 'bottom', labels: { color: '#e0e0e0', boxWidth: 15, padding: 25, font: { size: 14 } } },
                         tooltip: { mode: 'index', intersect: false, titleFont: { weight: 'bold' }, bodyFont: { size: 13 }, padding: 10 },
+                    }
+                }
+             });
+        }
+
+        function renderDeveloperCountChart(data) {
+            const labels = Object.keys(data).sort();
+            const datasets = [
+                { label: 'Full-time devs', data: labels.map(m => data[m].full_time), borderColor: '#E0E0E0', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 },
+                { label: 'Part-time devs', data: labels.map(m => data[m].part_time), borderColor: '#FFD700', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 },
+                { label: 'One-time devs', data: labels.map(m => data[m].one_time), borderColor: '#808080', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 }
+            ];
+            const ctx = document.getElementById('developerReportChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    maintainAspectRatio: false, responsive: true, interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Number of Developers', color: '#e0e0e0', font: { size: 14 } }, grid: { color: 'rgba(255, 255, 255, 0.1)', drawBorder: false }, ticks: { color: '#e0e0e0', precision: 0 }},
+                        x: { grid: { display: false }, ticks: { color: '#e0e0e0', autoSkip: true, maxTicksLimit: 12 }}
                     },
-                },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#e0e0e0', boxWidth: 15, padding: 25, font: { size: 14 } } },
+                        tooltip: { mode: 'index', intersect: false, titleFont: { weight: 'bold' }, bodyFont: { size: 13 }, padding: 10 },
+                    }
+                }
             });
         }
 
@@ -230,26 +206,25 @@
 
         // --- MAIN ORCHESTRATOR ---
         async function renderAllCharts() {
-            // Render the local data chart immediately
-            renderDeveloperTypeChart(devReportData);
-
+            // Render the charts with local data immediately
+            renderCommitVolumeChart(commitVolumeData);
+            renderDeveloperCountChart(devCountData);
+            
             try {
-                // Fetch the remote data for the other charts
+                // Fetch the remote data for the third chart
                 const dataUrl = 'https://mrfofellyffayhzroxrz.supabase.co/storage/v1/object/sign/easy/xrp_data%20(2).json?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lYmQ2ZTI1NC1lMDc5LTQ2NTItOWRmMC0wMmRiMGM4MWEwZWQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJlYXN5L3hycF9kYXRhICgyKS5qc29uIiwiaWF0IjoxNzU3OTM2OTI3LCJleHAiOjE3ODk0NzI5Mjd9.oeYx_R4QK7DLh4iayai2Co_W56ktNjfE49iTiQ59LSQ';
                 const response = await fetch(dataUrl);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}.`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}.`);
                 const jsonData = await response.json();
-
+                
                 // Render the charts that depend on the fetched data
                 renderEcosystemCharts(jsonData);
 
             } catch (error) {
                 console.error("Failed to load or render remote data charts:", error);
-                 document.getElementById('loading').innerHTML = `<p style="color: red;">Failed to load remote data. Check console for details.</p>`;
+                document.getElementById('loading').innerHTML = `<p style="color: red;">Failed to load remote data. Check console for details.</p>`;
             } finally {
-                 // Hide loading overlay once everything is done or has failed
+                // Hide loading overlay once everything is done or has failed
                 document.getElementById('loading').style.display = 'none';
             }
         }
