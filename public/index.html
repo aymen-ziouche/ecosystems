@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ecosystem Commit Trends</title>
+    <title>Full XRP Ecosystem Developer Report</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #1a1a1a; color: #e0e0e0; display: flex; justify-content: center; align-items: center; padding: 20px; margin: 0; flex-direction: column; }
-        h1, h2 { color: #ffffff; text-align: center; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #1a1a1a; color: #e0e0e0; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
         .container { width: 90%; max-width: 1200px; background-color: #2a2a2a; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+        h1, h2 { color: #ffffff; text-align: center; }
         .chart-wrapper { position: relative; height: 500px; width: 100%; }
         #ecosystem-breakdown { padding-top: 10px; }
         .ecosystem-row { margin-bottom: 16px; }
@@ -22,145 +22,240 @@
 </head>
 <body>
     <div id="loading" class="loading-overlay">
-        <p>Loading and processing large data file...</p>
+        <p>Loading remote commit data...</p>
+    </div>
+
+    <h1>Full XRP Ecosystem Developer Report</h1>
+
+    <div class="container">
+        <h2>Monthly Developers by Type</h2>
+        <div class="chart-wrapper">
+            <canvas id="developerReportChart"></canvas>
+        </div>
     </div>
 
     <div class="container">
-        <h1>Ecosystem Commit Activity</h1>
+        <h2>Monthly Commits by Ecosystem</h2>
         <div class="chart-wrapper">
             <canvas id="commitTrendChart"></canvas>
         </div>
     </div>
+
     <div id="ecosystem-breakdown" class="container">
-        <h2>Commit Distribution by Ecosystem</h2>
-    </div>
+        </div>
 
     <script>
-        async function renderCharts() {
-            try {
-                // Set the data URL to your Supabase link
-                const dataUrl = 'https://mrfofellyffayhzroxrz.supabase.co/storage/v1/object/sign/easy/xrp_data%20(2).json?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lYmQ2ZTI1NC1lMDc5LTQ2NTItOWRmMC0wMmRiMGM4MWEwZWQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJlYXN5L3hycF9kYXRhICgyKS5qc29uIiwiaWF0IjoxNzU3OTM2OTI3LCJleHAiOjE3ODk0NzI5Mjd9.oeYx_R4QK7DLh4iayai2Co_W56ktNjfE49iTiQ59LSQ';
-                
-                // --- THIS IS THE FIX ---
-                // The incorrect safety check has been removed.
+        // --- DATA FOR DEVELOPER REPORT CHART ---
+        const devReportData = {
+          "2023-02": {"full_time": 0, "part_time": 0, "one_time": 1},
+          "2023-05": {"full_time": 0, "part_time": 0, "one_time": 1},
+          "2023-08": {"full_time": 0, "part_time": 1, "one_time": 0},
+          "2023-09": {"full_time": 0, "part_time": 1, "one_time": 0},
+          "2024-01": {"full_time": 0, "part_time": 1, "one_time": 0},
+          "2024-02": {"full_time": 0, "part_time": 1, "one_time": 0},
+          "2024-03": {"full_time": 0, "part_time": 0, "one_time": 1},
+          "2024-06": {"full_time": 0, "part_time": 1, "one_time": 1},
+          "2024-07": {"full_time": 0, "part_time": 1, "one_time": 1},
+          "2024-08": {"full_time": 0, "part_time": 2, "one_time": 3},
+          "2024-09": {"full_time": 4, "part_time": 56, "one_time": 106},
+          "2024-10": {"full_time": 13, "part_time": 112, "one_time": 154},
+          "2024-11": {"full_time": 12, "part_time": 148, "one_time": 160},
+          "2024-12": {"full_time": 14, "part_time": 174, "one_time": 111},
+          "2025-01": {"full_time": 16, "part_time": 161, "one_time": 122},
+          "2025-02": {"full_time": 15, "part_time": 171, "one_time": 114},
+          "2025-03": {"full_time": 11, "part_time": 170, "one_time": 142},
+          "2025-04": {"full_time": 15, "part_time": 156, "one_time": 138},
+          "2025-05": {"full_time": 16, "part_time": 168, "one_time": 118},
+          "2025-06": {"full_time": 18, "part_time": 170, "one_time": 121},
+          "2025-07": {"full_time": 16, "part_time": 96, "one_time": 26},
+          "2025-08": {"full_time": 11, "part_time": 78, "one_time": 17},
+          "2025-09": {"full_time": 1, "part_time": 53, "one_time": 11}
+        };
 
+        // --- CHART RENDERING LOGIC ---
+
+        function renderDeveloperTypeChart(data) {
+            const labels = Object.keys(data).sort();
+            const datasets = [
+                {
+                    label: 'Full-time devs',
+                    data: labels.map(month => data[month].full_time),
+                    borderColor: '#E0E0E0',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2.5,
+                    tension: 0.4,
+                    pointRadius: 1,
+                    pointHoverRadius: 6,
+                },
+                {
+                    label: 'Part-time devs',
+                    data: labels.map(month => data[month].part_time),
+                    borderColor: '#FFD700',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2.5,
+                    tension: 0.4,
+                    pointRadius: 1,
+                    pointHoverRadius: 6,
+                },
+                {
+                    label: 'One-time devs',
+                    data: labels.map(month => data[month].one_time),
+                    borderColor: '#808080',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2.5,
+                    tension: 0.4,
+                    pointRadius: 1,
+                    pointHoverRadius: 6,
+                }
+            ];
+
+            const ctx = document.getElementById('developerReportChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: { labels: labels, datasets: datasets },
+                options: {
+                    maintainAspectRatio: false, responsive: true,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Number of Developers', color: '#e0e0e0', font: { size: 14 } },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)', drawBorder: false },
+                            ticks: { color: '#e0e0e0', precision: 0 }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#e0e0e0', autoSkip: true, maxTicksLimit: 12 }
+                        },
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#e0e0e0', boxWidth: 15, padding: 25, font: { size: 14 } } },
+                        tooltip: { mode: 'index', intersect: false, titleFont: { weight: 'bold' }, bodyFont: { size: 13 }, padding: 10 },
+                    },
+                },
+            });
+        }
+
+        function renderEcosystemCharts(jsonData) {
+            const getDistinctColors = (numColors) => {
+                const colors = [];
+                for (let i = 0; i < numColors; i++) {
+                    const hue = i * (360 / numColors);
+                    colors.push(`hsl(${hue}, 70%, 60%)`);
+                }
+                return colors;
+            };
+
+            const commitsByEcosystemAndDay = {};
+            const allDates = new Set();
+            jsonData.forEach((repoData) => {
+                const ecosystem = repoData.ecosystem;
+                repoData.commits.forEach((commit) => {
+                    if (commit.date) {
+                        const date = new Date(commit.date).toISOString().split('T')[0];
+                        allDates.add(date);
+                        if (!commitsByEcosystemAndDay[ecosystem]) commitsByEcosystemAndDay[ecosystem] = {};
+                        if (!commitsByEcosystemAndDay[ecosystem][date]) commitsByEcosystemAndDay[ecosystem][date] = 0;
+                        commitsByEcosystemAndDay[ecosystem][date]++;
+                    }
+                });
+            });
+
+            const sortedUniqueDates = Array.from(allDates).sort();
+            const ecosystemNames = Object.keys(commitsByEcosystemAndDay);
+            const ecosystemColors = getDistinctColors(ecosystemNames.length);
+            const colorMap = {};
+            ecosystemNames.forEach((name, index) => {
+                colorMap[name] = ecosystemColors[index];
+            });
+
+            const datasets = ecosystemNames.map((ecosystem) => {
+                const data = sortedUniqueDates.map((date) => commitsByEcosystemAndDay[ecosystem][date] || 0);
+                const color = colorMap[ecosystem];
+                return {
+                    label: ecosystem, data: data, borderColor: color,
+                    backgroundColor: color.replace('hsl', 'hsla').replace(')', ', 0.2)'),
+                    borderWidth: 1.5, fill: true, tension: 0.4, pointRadius: 0, hoverRadius: 5,
+                };
+            });
+
+            const trendCtx = document.getElementById('commitTrendChart').getContext('2d');
+            new Chart(trendCtx, {
+                type: 'line',
+                data: { labels: sortedUniqueDates, datasets: datasets },
+                options: {
+                    maintainAspectRatio: false, responsive: true,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Commits', color: '#e0e0e0' }, grid: { color: 'rgba(255, 255, 255, 0.1)', drawBorder: false }, ticks: { color: '#e0e0e0', precision: 0 } },
+                        x: { stacked: true, grid: { display: false, drawBorder: false }, ticks: { color: '#e0e0e0', autoSkip: true, maxTicksLimit: 10 } },
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#e0e0e0', boxWidth: 12, padding: 20 } },
+                        tooltip: { mode: 'index', intersect: false },
+                    },
+                },
+            });
+
+            const commitsByEcosystemTotal = {};
+            let totalAllCommits = 0;
+            jsonData.forEach((repoData) => {
+                const ecosystem = repoData.ecosystem;
+                const commitCount = repoData.commits.length;
+                if (!commitsByEcosystemTotal[ecosystem]) commitsByEcosystemTotal[ecosystem] = 0;
+                commitsByEcosystemTotal[ecosystem] += commitCount;
+                totalAllCommits += commitCount;
+            });
+            const sortedEcosystemsForBreakdown = Object.entries(commitsByEcosystemTotal).sort(([, a], [, b]) => b - a);
+            const breakdownContainer = document.getElementById('ecosystem-breakdown');
+            let breakdownHtml = '<h2>Commit Distribution by Ecosystem</h2>';
+            sortedEcosystemsForBreakdown.forEach(([ecosystem, count]) => {
+                const percentage = totalAllCommits > 0 ? (count / totalAllCommits) * 100 : 0;
+                if (count > 0) {
+                    breakdownHtml += `
+                        <div class="ecosystem-row">
+                            <div class="ecosystem-label">
+                                <span>${ecosystem}</span>
+                                <span>${percentage.toFixed(2)}% (${count.toLocaleString()} commits)</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" style="width: ${percentage}%; background-color: ${colorMap[ecosystem] || '#8465FF'};"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            breakdownContainer.innerHTML = breakdownHtml;
+        }
+
+        // --- MAIN ORCHESTRATOR ---
+        async function renderAllCharts() {
+            // Render the local data chart immediately
+            renderDeveloperTypeChart(devReportData);
+
+            try {
+                // Fetch the remote data for the other charts
+                const dataUrl = 'https://mrfofellyffayhzroxrz.supabase.co/storage/v1/object/sign/easy/xrp_data%20(2).json?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lYmQ2ZTI1NC1lMDc5LTQ2NTItOWRmMC0wMmRiMGM4MWEwZWQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJlYXN5L3hycF9kYXRhICgyKS5qc29uIiwiaWF0IjoxNzU3OTM2OTI3LCJleHAiOjE3ODk0NzI5Mjd9.oeYx_R4QK7DLh4iayai2Co_W56ktNjfE49iTiQ59LSQ';
                 const response = await fetch(dataUrl);
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}.`);
                 }
                 const jsonData = await response.json();
 
-                document.getElementById('loading').style.display = 'none';
-
-                // Function to generate distinct colors
-                const getDistinctColors = (numColors) => {
-                    const colors = [];
-                    for (let i = 0; i < numColors; i++) {
-                        const hue = i * (360 / numColors);
-                        colors.push(`hsl(${hue}, 70%, 60%)`);
-                    }
-                    return colors;
-                };
-
-                // 1. Process data for the charts
-                const commitsByEcosystemAndDay = {};
-                const allDates = new Set();
-                jsonData.forEach((repoData) => {
-                    const ecosystem = repoData.ecosystem;
-                    repoData.commits.forEach((commit) => {
-                        if (commit.date) {
-                            const date = new Date(commit.date).toISOString().split('T')[0];
-                            allDates.add(date);
-                            if (!commitsByEcosystemAndDay[ecosystem]) commitsByEcosystemAndDay[ecosystem] = {};
-                            if (!commitsByEcosystemAndDay[ecosystem][date]) commitsByEcosystemAndDay[ecosystem][date] = 0;
-                            commitsByEcosystemAndDay[ecosystem][date]++;
-                        }
-                    });
-                });
-
-                const sortedUniqueDates = Array.from(allDates).sort();
-                const ecosystemNames = Object.keys(commitsByEcosystemAndDay);
-                const ecosystemColors = getDistinctColors(ecosystemNames.length);
-                const colorMap = {};
-                ecosystemNames.forEach((name, index) => {
-                    colorMap[name] = ecosystemColors[index];
-                });
-
-                // 2. Create the datasets for the STACKED chart
-                const datasets = ecosystemNames.map((ecosystem) => {
-                    const data = sortedUniqueDates.map((date) => commitsByEcosystemAndDay[ecosystem][date] || 0);
-                    const color = colorMap[ecosystem];
-                    return {
-                        label: ecosystem,
-                        data: data,
-                        borderColor: color,
-                        backgroundColor: color.replace('hsl', 'hsla').replace(')', ', 0.2)'),
-                        borderWidth: 1.5,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 0,
-                        hoverRadius: 5,
-                    };
-                });
-
-                // 3. Create the stacked area chart
-                const trendCtx = document.getElementById('commitTrendChart').getContext('2d');
-                new Chart(trendCtx, {
-                    type: 'line',
-                    data: { labels: sortedUniqueDates, datasets: datasets },
-                    options: {
-                        maintainAspectRatio: false,
-                        responsive: true,
-                        interaction: { mode: 'index', intersect: false },
-                        scales: {
-                            y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Commits', color: '#e0e0e0' }, grid: { color: 'rgba(255, 255, 255, 0.1)', drawBorder: false }, ticks: { color: '#e0e0e0', precision: 0 } },
-                            x: { stacked: true, grid: { display: false, drawBorder: false }, ticks: { color: '#e0e0e0', autoSkip: true, maxTicksLimit: 10 } },
-                        },
-                        plugins: {
-                            legend: { position: 'bottom', labels: { color: '#e0e0e0', boxWidth: 12, padding: 20 } },
-                            tooltip: { mode: 'index', intersect: false },
-                        },
-                    },
-                });
-
-                // 4. Populate the percentage breakdown bars
-                const commitsByEcosystemTotal = {};
-                let totalAllCommits = 0;
-                jsonData.forEach((repoData) => {
-                    const ecosystem = repoData.ecosystem;
-                    const commitCount = repoData.commits.length;
-                    if (!commitsByEcosystemTotal[ecosystem]) commitsByEcosystemTotal[ecosystem] = 0;
-                    commitsByEcosystemTotal[ecosystem] += commitCount;
-                    totalAllCommits += commitCount;
-                });
-                const sortedEcosystemsForBreakdown = Object.entries(commitsByEcosystemTotal).sort(([, a], [, b]) => b - a);
-                const breakdownContainer = document.getElementById('ecosystem-breakdown');
-                let breakdownHtml = '<h2>Commit Distribution by Ecosystem</h2>';
-                sortedEcosystemsForBreakdown.forEach(([ecosystem, count]) => {
-                    const percentage = totalAllCommits > 0 ? (count / totalAllCommits) * 100 : 0;
-                    if (count > 0) {
-                        breakdownHtml += `
-                            <div class="ecosystem-row">
-                                <div class="ecosystem-label">
-                                    <span>${ecosystem}</span>
-                                    <span>${percentage.toFixed(2)}% (${count.toLocaleString()} commits)</span>
-                                </div>
-                                <div class="progress-bar-container">
-                                    <div class="progress-bar" style="width: ${percentage}%; background-color: ${colorMap[ecosystem] || '#8465FF'};"></div>
-                                </div>
-                            </div>
-                        `;
-                    }
-                });
-                breakdownContainer.innerHTML = breakdownHtml;
+                // Render the charts that depend on the fetched data
+                renderEcosystemCharts(jsonData);
 
             } catch (error) {
-                console.error("Failed to load or render chart:", error);
-                document.getElementById('loading').innerHTML = `<p style="color: red;">Failed to load or render chart. Check console for details.</p>`;
+                console.error("Failed to load or render remote data charts:", error);
+                 document.getElementById('loading').innerHTML = `<p style="color: red;">Failed to load remote data. Check console for details.</p>`;
+            } finally {
+                 // Hide loading overlay once everything is done or has failed
+                document.getElementById('loading').style.display = 'none';
             }
         }
-        
-        renderCharts();
+
+        // Run the main function
+        renderAllCharts();
     </script>
 </body>
 </html>
