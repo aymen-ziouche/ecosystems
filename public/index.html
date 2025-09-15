@@ -64,10 +64,19 @@
 
         function renderCommitVolumeChart(data) {
              const labels = Object.keys(data).sort();
+             
+             // --- THIS LOGIC WAS MISSING ---
+             const fullTimeData = labels.map(m => data[m].full_time_commits);
+             const partTimeData = labels.map(m => data[m].part_time_commits);
+             const oneTimeData = labels.map(m => data[m].one_time_commits);
+             const totalData = labels.map((m, i) => fullTimeData[i] + partTimeData[i] + oneTimeData[i]);
+
              const datasets = [
-                { label: 'Commits by full-time devs', data: labels.map(m => data[m].full_time_commits), borderColor: '#E0E0E0', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 },
-                { label: 'Commits by part-time devs', data: labels.map(m => data[m].part_time_commits), borderColor: '#FFD700', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 },
-                { label: 'Commits by one-time devs', data: labels.map(m => data[m].one_time_commits), borderColor: '#808080', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 }
+                // --- THIS DATASET WAS MISSING ---
+                { label: 'Total Commits', data: totalData, borderColor: '#36A2EB', backgroundColor: 'transparent', borderWidth: 3, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 },
+                { label: 'Commits by full-time devs', data: fullTimeData, borderColor: '#E0E0E0', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 },
+                { label: 'Commits by part-time devs', data: partTimeData, borderColor: '#FFD700', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 },
+                { label: 'Commits by one-time devs', data: oneTimeData, borderColor: '#808080', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 }
              ];
              const ctx = document.getElementById('commitReportChart').getContext('2d');
              new Chart(ctx, {
@@ -89,10 +98,19 @@
 
         function renderDeveloperCountChart(data) {
             const labels = Object.keys(data).sort();
+            
+            // --- THIS LOGIC WAS MISSING ---
+            const fullTimeData = labels.map(m => data[m].full_time);
+            const partTimeData = labels.map(m => data[m].part_time);
+            const oneTimeData = labels.map(m => data[m].one_time);
+            const totalData = labels.map((m, i) => fullTimeData[i] + partTimeData[i] + oneTimeData[i]);
+
             const datasets = [
-                { label: 'Full-time devs', data: labels.map(m => data[m].full_time), borderColor: '#E0E0E0', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 },
-                { label: 'Part-time devs', data: labels.map(m => data[m].part_time), borderColor: '#FFD700', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 },
-                { label: 'One-time devs', data: labels.map(m => data[m].one_time), borderColor: '#808080', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 }
+                // --- THIS DATASET WAS MISSING ---
+                { label: 'Total Developers', data: totalData, borderColor: '#36A2EB', backgroundColor: 'transparent', borderWidth: 3, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 },
+                { label: 'Full-time devs', data: fullTimeData, borderColor: '#E0E0E0', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 },
+                { label: 'Part-time devs', data: partTimeData, borderColor: '#FFD700', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 },
+                { label: 'One-time devs', data: oneTimeData, borderColor: '#808080', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.4, pointRadius: 1, pointHoverRadius: 6 }
             ];
             const ctx = document.getElementById('developerReportChart').getContext('2d');
             new Chart(ctx, {
